@@ -1,0 +1,28 @@
+{
+  "name": "floatpoint_math",
+  "version": "1.0.0",
+  "description": "Bankex foundation Solidity float point repository",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BankEx/solidity-float-point-calculation"
+  },
+  "author": "shamatar",
+  "license": "MIT",
+  "dependencies": {
+    "coinstring": "^2.3.0",
+    "ejs": "^2.5.7",
+    "ejs-locals": "^1.0.2",
+    "ethereumjs-testrpc": "^4.1.1",
+    "moment": "^2.18.1",
+    "solc": "^0.4.16",
+    "truffle-artifactor": "^2.1.5",
+    "truffle-contract": "^2.0.5",
+    "web3": "^0.20.1",
+    "zeppelin-solidity": "^1.2.0"
+  }
+}

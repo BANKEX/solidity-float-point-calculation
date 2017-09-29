@@ -1,0 +1,280 @@
+{
+  "contract_name": "FloatMath",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGNIF_MAX_BYTES",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGNIF_MAX",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "res",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGNIF_MIN",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "EXP_MAX",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "EXP_BITS",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testMulBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGN_BITS",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testSubBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "EXP_BIAS",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testDivBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testBytesToArray",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "uint256[3]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "EXP_MIN",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGNIF_MIN_BYTES",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "SIGNIF_BITS",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testAddBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ],
+  "unlinked_binary": "0x6060604052341561000f57600080fd5b6108bb8061001e6000396000f300606060405236156100e35763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166314f4a3db81146100e85780631d23672e146100e85780636f10e2851461010d57806372640a3014610120578063761eabef1461013357806380809876146101465780638a1fe8391461015957806394b56d5714610172578063963fcaf014610185578063a536d04a1461019e578063b5906d68146101b1578063bcc651b0146101ca578063d85fabeb14610218578063dfbeeb7c14610120578063e6a47f261461022b578063f0deaccd1461023e575b600080fd5b34156100f357600080fd5b6100fb610257565b60405190815260200160405180910390f35b341561011857600080fd5b6100fb610279565b341561012b57600080fd5b6100fb61027f565b341561013e57600080fd5b6100fb610287565b341561015157600080fd5b6100fb61028e565b341561016457600080fd5b6100fb600435602435610293565b341561017d57600080fd5b6100fb6102ac565b341561019057600080fd5b6100fb6004356024356102b1565b34156101a957600080fd5b6100fb6102c3565b34156101bc57600080fd5b6100fb6004356024356102ca565b34156101d557600080fd5b6101e06004356102dc565b6040518082606080838360005b838110156102055780820151838201526020016101ed565b5050505090500191505060405180910390f35b341561022357600080fd5b6100fb6102f3565b341561023657600080fd5b6100fb6102f8565b341561024957600080fd5b6100fb6004356024356102fd565b7d1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff81565b60005481565b60ec60020a81565b6207ffff81565b601381565b60006102a5838363ffffffff61030f16565b9392505050565b600181565b60006102a5838363ffffffff61035216565b6203ffff81565b60006102a5838363ffffffff61038f16565b6102e4610868565b6102ed826103c4565b92915050565b600081565b60ec81565b60006102a5838363ffffffff61044716565b6000610319610868565b610321610868565b61032a856103c4565b9150610335846103c4565b9050610349610344838361046d565b610598565b95945050505050565b600061035c610868565b610364610868565b61036d856103c4565b915061038061037b856105d1565b6103c4565b905061034961034483836105f6565b6000610399610868565b6103a1610868565b6103aa856103c4565b91506103b5846103c4565b9050610349610344838361076b565b6103cc610868565b7f800000000000000000000000000000000000000000000000000000000000000082047d2000000000000000000000000000000000000000000000000000000000006002840204621000008085020460ec60020a01606060405190810160405280848152602001838152602001828152509350505050919050565b6000610451610868565b610459610868565b610462856103c4565b9150610380846103c4565b610475610868565b6000808080808080808060028b518d510181151561048f57fe5b06985060ec6203ffff60208d015160208f015101030197506207ffff8811156104b757600080fd5b607660408d015160029190910a90049650610100608960408e0151600292830a91830a020496506076908c90602002015160029190910a90049450610100608960408d0151600292830a9190920a909102049350505083820290506e4000000000000000000000000000008082048684028587020101908104868502015b7d1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff81111561056b576001979097019660029004610535565b6060604051908101604052808a815260200189815260200182815250995050505050505050505092915050565b600080808060ff855160029190910a02925060ec602086015160029190910a02915060ec60020a60408601511891909217179392505050565b7f80000000000000000000000000000000000000000000000000000000000000001890565b6105fe610868565b6000808080808080808060208c0151985060208c0151975060208b0151965060408c0151955060408b015194508b5193508a51925060009150600090508787111561065757869850878703869060020a9004955061066a565b8688111561066a5786880360020a909404935b8284016002141561068157505083830160016106ea565b83600114156106b2578486111561069e57505082840360016106ad565b8585106106ad57505083830360005b6106ea565b82600114156106e257858511156106cf57505083830360016106ad565b8486106106ad57505082840360006106ea565b505083830160005b5b7d1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82111561072357600198909801976002909104906106eb565b5b60ec60020a8210156107425760001990980197600290910290610724565b606060405190810160409081529181526020810199909952880152509498975050505050505050565b610773610868565b6000808080808080808080808060208f01519b5060208e01519a5060408f0151995060408e015198508e5197508d5196506203ff138b8d030195506000861180156107c057506207ffff86105b15156107c857fe5b600288880106945060009350899250888a10156107ed57600019909501946002909202915b5060ec905060005b60ec81101561083c5781898481151561080a57fe5b049060020a02840193508180600190039250506001898481151561082a57fe5b0660029190910a0292506001016107f5565b606060405190810160409081529581526020810196909652505050908201529998505050505050505050565b60606040519081016040526003815b600081526020019060019003908161087757905050905600a165627a7a7230582072ebbf220d874c19cc28848c7b32bcfe5975e289b2e3a24e74ec573d09afed410029",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1506560685750
+}
