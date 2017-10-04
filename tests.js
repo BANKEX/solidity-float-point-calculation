@@ -130,6 +130,7 @@ async function runTests() {
         await testSubtraction();
         await testDivision();
         await testMultiplication();
+        await testLog2(); 
     }
     catch(err){
         console.log(err);
@@ -141,6 +142,9 @@ const SIGNIF_BITS = 236;
 const EXP_BIAS = 262143;
 
 function encodeBNtoBytes32(number) {
+    if (number.equals(0)){
+        return "0x" + "0"*64;
+    }
     // console.log(number.toNumber())
     var signString = "0"
     if (number < 0) {
@@ -190,6 +194,9 @@ function encodeBNtoBytes32(number) {
 
 function decodeBNfromBytes32(bytesString) {
     bytesString = bytesString.substring(2);
+    if (bytesString == '0'*64){
+        return new BigNumber(0);
+    }
     assert(bytesString.length == 64);
     const TWO = new BigNumber(2);
     const SIGNIF_MIN = TWO.pow(SIGNIF_BITS);
@@ -339,6 +346,31 @@ async function testDivision() {
     }
 
     console.log("Div test done");
+} 
+
+async function testLog2() {
+    console.log("Test log2");
+
+    for (var i = 0; i < 10; i++) {
+        try{
+            var integer = ""+ getRandomInt(1, 1025);
+            // integer = "1000";
+            var aBN = new BigNumber(integer);
+            const a = encodeBNtoBytes32(aBN);
+            var res = await DeployedTesterContract.testLog2Bytes(a);
+            var num = decodeBNfromBytes32(res);
+            var expected = new BigNumber ("" + Math.log2(aBN.toNumber()));
+            if(num.div(expected).sub(1).abs().gt(1e-9)) {
+                throw("Error in LOG2");
+            }
+        }
+        catch(err){
+            console.log("Expected "+expected.toString());
+            console.log("Got "+num.toString());
+            throw(err);
+        }
+    }
+    console.log("Log2 test done");
 } 
 
 runTests();

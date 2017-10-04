@@ -14,21 +14,20 @@ Included functions:
 - sub
 - mul
 - div (naive implementation, slow)
+- log2
 
 Planned functions:
 
-- log2
 - 2^x
 
 Known issues:
 
 - Non-normalized numbers are not properly represented
-- Zero is not properly prepresented
 - Overflow is not processed
 
 ## What's inside
 
-Crude core for library and set of tests, including helper functions to encode BigNumber into bytes32.
+Crude core for library and set of tests, including helper functions to encode BigNumber into bytes32. Library is in a form of contract for ease of compilation in deployment (see Tester.sol for example).
 
 ## How to run
 

@@ -20,11 +20,16 @@ contract FloatMath {
     bytes32 constant SIGNIF_MAX_BYTES = bytes32(SIGNIF_MAX);
     bytes32 constant SIGNIF_MIN_BYTES = bytes32(SIGNIF_MIN);
 
+    bytes32 constant ZERO_BYTES = bytes32(0);
+
     // uint256 constant MAX_MULTIPLICATION_BITS = uint256(15);    
     // uint256 constant MAX_MULTIPLICATION_DIVISOR = (uint(2) << MAX_MULTIPLICATION_BITS);
     
     
     function toArray(bytes32 a) public pure returns (uint256[3] memory result) {
+        if (a == ZERO_BYTES) {
+            return result;
+        }
         uint256 newSign = uint256(a >> 255);
         uint256 newExp = uint256((a << SIGN_BITS) >> (SIGNIF_BITS+SIGN_BITS));
         // uint256 newExp = uint256((a >> SIGNIF_BITS) & SIGN_REMOVAL_MASK);
@@ -34,6 +39,9 @@ contract FloatMath {
     }
     
     function fromArray(uint256[3] _array) public pure returns (bytes32 packed) {
+        if (_array[0] == 0 && _array[1] == 0 && _array[2] == 0) {
+            return ZERO_BYTES;
+        }
         bytes32 packedSign = bytes32(_array[0] << 255);
         bytes32 packedExp = bytes32(_array[1] << SIGNIF_BITS);
         bytes32 packedSignif = bytes32(_array[2]) ^ SIGNIF_MIN_BYTES;    
@@ -47,6 +55,12 @@ contract FloatMath {
     }
     
     function addArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return bArray;
+        }
+        if (bArray[0] == 0 && bArray[1] == 0 && bArray[2] == 0) {
+            return aArray;
+        }
         uint256 newExp = aArray[1];
         uint256 expA = aArray[1];
         uint256 expB = bArray[1];
@@ -86,6 +100,9 @@ contract FloatMath {
         } else {
             newSignif = signifA + signifB;
             newSign = 0;
+        }
+        if (newSignif == 0) {
+            return [uint256(0), uint256(0), uint256(0)];
         }
         while (newSignif > SIGNIF_MAX) {
             newSignif = newSignif >> 1;
@@ -100,10 +117,16 @@ contract FloatMath {
    
 
     function negate(bytes32 a) public pure returns (bytes32 result) {
+        if (a == ZERO_BYTES) {
+            return a;
+        }
         return a ^ bytes32(uint256(1) << 255);
     } 
 
     function negateArray(uint256[3] aArray) public pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return aArray;
+        }
         return [(aArray[0] + 1 )%2, aArray[1], aArray[2]];
     }
  
@@ -114,55 +137,14 @@ contract FloatMath {
     }
     
     function subArrays(uint256[3] aArray, uint256[3] _bArray) public pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return negateArray(_bArray);
+        }
+        if (_bArray[0] == 0 && _bArray[1] == 0 && _bArray[2] == 0) {
+            return aArray;
+        }
         uint256[3] memory bArray = negateArray(_bArray);
-        uint256 newExp = aArray[1];
-        uint256 expA = aArray[1];
-        uint256 expB = bArray[1];
-        uint256 signifA = aArray[2];
-        uint256 signifB = bArray[2];
-        uint256 signA = aArray[0];
-        uint256 signB = bArray[0];
-        uint256 newSignif = 0;
-        uint256 newSign = 0;
-        if (expB > expA) {
-            newExp = expB;
-            signifA = signifA >> (expB - expA);
-        } else if (expA > expB) {
-            signifB = signifB >> (expA - expB);
-        }
-        
-        if (signA + signB == 2) {
-            newSign = 1;
-            newSignif = signifA + signifB;
-        } else if (signA == 1) {
-            if (signifA > signifB) {
-                newSignif = signifA - signifB;
-                newSign = 1;
-            } else if (signifB >= signifA) {
-                newSignif = signifB - signifA;
-                newSign = 0;
-            }
-        } else if (signB == 1) {
-            if (signifB > signifA) {
-                newSignif = signifB - signifA;
-                newSign = 1;
-            } else if (signifA >= signifB) {
-                newSignif = signifA - signifB;
-                newSign = 0;
-            }
-        } else {
-            newSignif = signifA + signifB;
-            newSign = 0;
-        }
-        while (newSignif > SIGNIF_MAX) {
-            newSignif = newSignif >> 1;
-            newExp++;
-        }
-        while (newSignif < SIGNIF_MIN) {
-            newSignif = newSignif << 1;
-            newExp--;
-        }        
-        return [newSign, newExp, newSignif];
+        return addArrays(aArray, bArray);
     }
   
     function mul(bytes32 a, bytes32 b) public pure returns (bytes32 result) {
@@ -172,6 +154,12 @@ contract FloatMath {
     }
     
     function mulArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return [uint256(0), uint256(0), uint256(0)];
+        }
+        if (bArray[0] == 0 && bArray[1] == 0 && bArray[2] == 0) {
+            return [uint256(0), uint256(0), uint256(0)];
+        }
         uint256 newSign = (aArray[0] + bArray[0]) % 2;
         uint256 newExp = (aArray[1] + bArray[1]) - EXP_BIAS;
         if (newExp > EXP_MAX) {
@@ -199,7 +187,7 @@ contract FloatMath {
             newExp++;
         }
         return [newSign, newExp, newSignif];
-    }
+    }   
     
     
     function div(bytes32 a, bytes32 b) public pure returns (bytes32 result) {
@@ -209,6 +197,12 @@ contract FloatMath {
     }
     
     function divArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return [uint256(0), uint256(0), uint256(0)];
+        }
+        if (bArray[0] == 0 && bArray[1] == 0 && bArray[2] == 0) {
+            revert();
+        }
         uint256 expA = aArray[1];
         uint256 expB = bArray[1];
         uint256 signifA = aArray[2];
@@ -232,6 +226,75 @@ contract FloatMath {
         }
         return [newSign, newExp, newSignif];
     }    
+
+    function compare(bytes32 a, bytes32 b) public pure returns (int8 result) {
+        uint256[3] memory aArray = toArray(a);
+        uint256[3] memory bArray = toArray(b);
+        return compareArrays(aArray, bArray);
+    }
+    
+    function compareArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (int8 result) {
+        if (aArray[0]==0 && bArray[0] == 0) {
+            return compareAbsArrays(aArray, bArray);
+        } else if (aArray[0]==1 && bArray[0] == 1) {
+            return -compareAbsArrays(aArray, bArray);
+        } else if (aArray[0] > bArray[0]) {
+            return -1;
+        }
+        return 1;
+    }
+
+    function compareAbs(bytes32 a, bytes32 b) public pure returns (int8 result) {
+        uint256[3] memory aArray = toArray(a);
+        uint256[3] memory bArray = toArray(b);
+        return compareAbsArrays(aArray, bArray);
+    }
+
+    function compareAbsArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (int8 result) {
+        if (aArray[1] > bArray[1]) {
+            return 1;
+        } else if (aArray[1] < bArray[1]) {
+            return -1;
+        } else {
+            if (aArray[2] > bArray[2]) {
+                return 1;
+            } else if (aArray[2] < bArray[2]) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    function log2bytes(bytes32 a) public pure returns (bytes32 result) {
+        uint256[3] memory aArray = toArray(a);
+        return fromArray(log2Array(aArray));
+    }
+    
+    function log2Array(uint256[3] aArray) public pure returns (uint256[3] memory result) {
+        require(aArray[0] == 0);
+        result = initFromIntToArray(int256(aArray[1]) - int256(EXP_BIAS));
+        uint256[3] memory ONE = initFromIntToArray(1);
+        uint256[3] memory TWO = initFromIntToArray(2);
+        uint256[3] memory tmp = initFromIntToArray(int256(aArray[2]));
+        uint256[3] memory ZERO = [uint256(0), uint256(0), uint256(0)];
+        tmp[1] = tmp[1] - SIGNIF_BITS;
+        uint256 numIterations = 64;
+        for (uint256 i = 1; i <= numIterations; i++) {
+            tmp = mulArrays(tmp, tmp);
+            ZERO = mulArrays(ZERO, TWO);
+            if (i==0) {
+                return tmp;
+            }
+            if (compareArrays(tmp, TWO) == 1) {
+                ZERO = addArrays(ZERO, ONE);
+                tmp[1] = tmp[1] - 1;
+            }
+        }
+        ZERO[1] = ZERO[1] - numIterations;
+        // ZERO[1] = divArrays(ZERO, initFromIntToArray(int256(uint256(1) << numIterations)));
+        result = addArrays(result, ZERO);
+        return result;
+    }
 
     function initFromInt(int256 a) public pure returns (bytes32 result) {
         uint256[3] memory tmp = initFromIntToArray(a);

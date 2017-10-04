@@ -55,6 +55,11 @@ contract Tester {
         return result;
     }
 
+    function testLog2Bytes(bytes32 a) public view returns (bytes32 result) {
+        result = floatLib.log2bytes(a);
+        return result;
+    }
+
     function Tester(address _flib) public {
         floatLib = FloatMath(_flib);
     }
