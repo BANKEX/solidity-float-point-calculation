@@ -130,6 +130,7 @@ async function runTests() {
         await testSubtraction();
         await testDivision();
         await testMultiplication();
+        await testZERO();
         await testLog2(); 
     }
     catch(err){
@@ -247,7 +248,7 @@ async function testEncodeDecode(){
         var integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
         const aBN = new BigNumber(integer);
         const a = encodeBNtoBytes32(aBN);
-        console.log(a);
+        // console.log(a);
         const testA = decodeBNfromBytes32(a);
         assert(testA.equals(aBN));
         var res = await DeployedTesterContract.testUintToFloat(aBN);
@@ -256,6 +257,46 @@ async function testEncodeDecode(){
 
     console.log("Encoding and decoding tested");
 }
+
+async function testZERO() {
+    console.log("Test operations on zero");
+
+    for (var i = 0; i < 10; i++){
+        var integer ="" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+        const aBN = new BigNumber(integer);
+        const a = encodeBNtoBytes32(aBN);
+        const bBN = new BigNumber(0);
+        const b = encodeBNtoBytes32(bBN);
+        var res = await DeployedTesterContract.testAddBytes(a,b);
+        var num = decodeBNfromBytes32(res);
+        assert(num.equals(aBN.add(bBN)));
+        res = await DeployedTesterContract.testAddBytes(b,a);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(bBN.add(aBN)));
+
+
+        res = await DeployedTesterContract.testSubBytes(a,b);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(aBN.sub(bBN)));
+        res = await DeployedTesterContract.testSubBytes(b,a);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(bBN.sub(aBN)));
+
+        res = await DeployedTesterContract.testMulBytes(a,b);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(aBN.mul(bBN)));
+        res = await DeployedTesterContract.testMulBytes(b,a);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(bBN.mul(aBN)));
+
+        res = await DeployedTesterContract.testDivBytes(b,a);
+        num = decodeBNfromBytes32(res);
+        assert(num.equals(bBN.div(aBN)));
+    }
+
+    console.log("Zero tests done");
+} 
+
 
 async function testAddition() {
     console.log("Test add");

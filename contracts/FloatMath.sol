@@ -297,11 +297,17 @@ contract FloatMath {
     }
 
     function initFromInt(int256 a) public pure returns (bytes32 result) {
+        if (a == 0) {
+            return ZERO_BYTES;
+        }
         uint256[3] memory tmp = initFromIntToArray(a);
         return fromArray(tmp);
     }
     
     function initFromIntToArray(int256 a) public pure returns (uint256[3] memory result) {
+        if (a==0) {
+            return result;
+        }
         int256 abs = a;
         uint256 newSign = 0;
         if (abs < 0) {
