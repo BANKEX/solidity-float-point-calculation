@@ -12,7 +12,9 @@ var TruffleContract = require('truffle-contract');
 var Web3 = require("web3");
 const util = require('util');
 var TesterContract;
+var FloatLibContract
 var DeployedTesterContract;
+var DeployedFloatLibContract;
 var allAccounts;
 var fromBtcWif = coinstring.createDecoder(0x80);
 var DECIMAL_MULTIPLIER_BN;
@@ -81,7 +83,8 @@ function printResultsArray(results){
 function deployContracts() {
     return async function() {
             console.log("Deploying contract...");
-            DeployedTesterContract = await TesterContract.new();
+            DeployedFloatLibContract = await FloatLibContract.new();
+            DeployedTesterContract = await TesterContract.new(DeployedFloatLibContract.address);
     }
 }
 
@@ -102,8 +105,9 @@ function mine(numBlocks){
 
 async function populateAccounts(){
     allAccounts = await getAccountsPromisified();
-    TesterContract= new TruffleContract(require("./build/contracts/FloatMath.json"));
-    [TesterContract].forEach(function(contract) {
+    TesterContract= new TruffleContract(require("./build/contracts/Tester.json"));
+    FloatLibContract = new TruffleContract(require("./build/contracts/FloatMath.json"));
+    [TesterContract,FloatLibContract].forEach(function(contract) {
         contract.setProvider(web3.currentProvider);
         contract.defaults({
         gas: 3.5e6,
@@ -149,7 +153,7 @@ function encodeBNtoBytes32(number) {
 
     assert(SIGNIF_MIN.toString(2).length == 237);
     assert(SIGNIF_MAX.toString(2).length == 237);
-    var exponent = new BigNumber(EXP_BIAS);
+    var exponent = new BigNumber(EXP_BIAS+236);
     number = number.abs();
     while (number.gt(SIGNIF_MAX)){
         number = number.divToInt(2);
@@ -207,7 +211,7 @@ function decodeBNfromBytes32(bytesString) {
     assert(mantString.length == 236);
     var mantisa = new BigNumber(mantString,2);
     mantisa = mantisa.add(SIGNIF_MIN);
-    exponent = exponent.sub(EXP_BIAS);
+    exponent = exponent.sub(EXP_BIAS+236);
     // console.log(exponent.toNumber());
     var number;
     if (exponent.toNumber() > 0){
@@ -232,12 +236,16 @@ function getRandomArbitrary(min, max) {
 async function testEncodeDecode(){
     console.log("Test encoding");
 
-    var integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
-    const aBN = new BigNumber(integer);
-    const a = encodeBNtoBytes32(aBN);
-    console.log(a);
-    const testA = decodeBNfromBytes32(a);
-    assert(testA.equals(aBN));
+    for (var i = 0; i < 10; i++){
+        var integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+        const aBN = new BigNumber(integer);
+        const a = encodeBNtoBytes32(aBN);
+        console.log(a);
+        const testA = decodeBNfromBytes32(a);
+        assert(testA.equals(aBN));
+        var res = await DeployedTesterContract.testUintToFloat(aBN);
+        assert(a == res);
+    }
 
     console.log("Encoding and decoding tested");
 }
@@ -281,19 +289,27 @@ async function testSubtraction() {
 async function testMultiplication() {
     console.log("Test mul");
 
-    for (var i = 0; i < 10; i++){
-        var integer ="" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
-        const aBN = new BigNumber(integer);
-        const a = encodeBNtoBytes32(aBN);
+    for (var i = 0; i < 10; i++) {
+        try{
+            var integer ="" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+            var aBN = new BigNumber(integer);
+            const a = encodeBNtoBytes32(aBN);
 
-        integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
-        const bBN = new BigNumber(integer);
-        const b = encodeBNtoBytes32(bBN);
-        var res = await DeployedTesterContract.testMulBytes(a,b);
-        const num = decodeBNfromBytes32(res);
-        assert(num.equals(aBN.mul(bBN)));
+            integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+            var bBN = new BigNumber(integer);
+            const b = encodeBNtoBytes32(bBN);
+            var res = await DeployedTesterContract.testMulBytes(a,b);
+            var num = decodeBNfromBytes32(res);
+            if(!num.equals( aBN.mul(bBN) ) ) {
+                throw("Error in MUL");
+            }
+        }
+        catch(err){
+            console.log("Expected "+aBN.mul(bBN).toString());
+            console.log("Got "+num.toString());
+            throw(err);
+        }
     }
-
     console.log("Mul test done");
 } 
 
@@ -301,16 +317,25 @@ async function testDivision() {
     console.log("Test div");
 
     for (var i = 0; i < 10; i++){
-        var integer ="" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
-        const aBN = new BigNumber(integer);
-        const a = encodeBNtoBytes32(aBN);
+        try{
+            var integer ="" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+            var aBN = new BigNumber(integer);
+            const a = encodeBNtoBytes32(aBN);
 
-        integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
-        const bBN = new BigNumber(integer);
-        const b = encodeBNtoBytes32(bBN);
-        var res = await DeployedTesterContract.testDivBytes(a,b);
-        const num = decodeBNfromBytes32(res);
-        assert(num.equals(aBN.div(bBN)));
+            integer = "" + getRandomInt(-1000000000000000000000, 1000000000000000000001);
+            var bBN = new BigNumber(integer);
+            const b = encodeBNtoBytes32(bBN);
+            var res = await DeployedTesterContract.testDivBytes(a,b);
+            var num = decodeBNfromBytes32(res);
+            if(!num.equals( aBN.div(bBN) ) ){
+                throw("Error in DIV");
+            }
+        }
+        catch(err){
+            console.log("Expected "+aBN.div(bBN).toString());
+            console.log("Got "+num.toString());
+            throw(err);
+        }
     }
 
     console.log("Div test done");

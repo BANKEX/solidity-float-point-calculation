@@ -13,20 +13,84 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const Contracts = ['FloatMath']
+const Contracts = ['Tester:Tester']
+
+
+function findImports (path) {
+  try{
+    var input = fs.readFileSync("./contracts/"+path);
+    var ret = {contents: input.toString()};
+    // ret[path] = input.toString();
+    return ret;
+  }
+  catch(error){
+    return { error: 'File not found' }
+  }
+}
 
 async function main() {
   console.log("Compiling contracts...");
+  var inputs = {}; 
     for (contract of Contracts){
-      console.log("Compiling artifact "+contract);
-      var input = fs.readFileSync("./contracts/"+contract+".sol");
-      var output = solc.compile(input.toString(), 1);
-      console.log(output.errors);
-      var bytecode = output.contracts[':Tester'].bytecode;
-      var abi = JSON.parse(output.contracts[':Tester'].interface);
-      await artifactor.save({contract_name: contract,  abi: abi, unlinked_binary: bytecode});
+      var parts = contract.split(':');
+      inputs[contract+'.sol'] =  fs.readFileSync("./contracts/"+parts[0]+".sol", 'utf8');
     }
+    try{ 
+      var output = solc.compile({ sources: inputs }, 1, findImports)
+    }
+    catch(error){
+      console.log(error);
+    }
+    for (err in output.errors){
+      console.log(output.errors[err]);
+    }
+    if (!output.contracts || Object.keys(output.contracts).length == 0){
+      throw("Didn't compile");
+    }
+    // new RegExp('__([a-zA-Z.:]+)[_]*', 'g');
+    // const libraryRE = /__([a-zA-Z.:]+)[_]*/g.compile();
+    const libraryRE = new RegExp('__([a-zA-Z.:]+)[_]*', 'g');
+    for (var property in output.contracts) {
+      if (output.contracts.hasOwnProperty(property)) {
+        var contract = output.contracts[property];
+        var bytecode = contract.bytecode;
+        if (libraryRE.test(bytecode)){
+          console.log("Linking is necessary!");
+          var m;
+          // bytecodeCopy = bytecode;
+          m = libraryRE.exec(bytecode);
+          while ((m = libraryRE.exec(bytecode)) !== null) {
+            // This is necessary to avoid infinite loops with zero-width matches
+            if (m.index === libraryRE.lastIndex) {
+              libraryRE.lastIndex++;
+            }
+            // The result can be accessed through the `m`-variable.
+            const libName = m[1];
+            const libObject = {};
+            libObject[libName] = output.contracts[libName].bytecode;
+            // for (var property2 in output.contracts) {
+            //   if (output.contracts.hasOwnProperty(property2)) {
+            //     if (property2 == libName){
+            //       libObject[libName] = output.contracts[property2].bytecode;
+            //     }  
+            //   }
+            // }
+
+            // bytecode = solc.linkBytecode(bytecode, libObject);
+          }
+        }
+        var meta = JSON.parse(contract.metadata);
+        if (bytecode == ""){
+          console.log("Bytecode is empty!");
+        }
+        var abi = JSON.parse(contract.interface);
+        const p = property.split(':');
+        await artifactor.save({contract_name: p[p.length-1],  abi: abi, unlinked_binary: bytecode});
+      }
+  }
     console.log("Done compiling");
 }  
 
 module.exports = main;
+
+ 

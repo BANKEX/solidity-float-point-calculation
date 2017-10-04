@@ -1,0 +1,150 @@
+{
+  "contract_name": "Tester",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "int256"
+        }
+      ],
+      "name": "testUintToFloat",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testMulBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testSubBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testDivBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testBytesToArray",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "uint256[3]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "a",
+          "type": "bytes32"
+        },
+        {
+          "name": "b",
+          "type": "bytes32"
+        }
+      ],
+      "name": "testAddBytes",
+      "outputs": [
+        {
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_flib",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ],
+  "unlinked_binary": "0x6060604052341561000f57600080fd5b60405160208061044d8339810160405280805160008054600160a060020a03909216600160a060020a031990921691909117905550506103f9806100546000396000f3006060604052361561005c5763ffffffff60e060020a60003504166359ba455e81146100615780638a1fe83914610089578063963fcaf0146100a2578063b5906d68146100bb578063bcc651b0146100d4578063f0deaccd14610122575b600080fd5b341561006c57600080fd5b61007760043561013b565b60405190815260200160405180910390f35b341561009457600080fd5b6100776004356024356101ac565b34156100ad57600080fd5b610077600435602435610224565b34156100c657600080fd5b61007760043560243561027b565b34156100df57600080fd5b6100ea6004356102d2565b6040518082606080838360005b8381101561010f5780820151838201526020016100f7565b5050505090500191505060405180910390f35b341561012d57600080fd5b61007760043560243561034f565b60008054600160a060020a0316632f1a549b83836040516020015260405160e060020a63ffffffff84160281526004810191909152602401602060405180830381600087803b151561018c57600080fd5b6102c65a03f1151561019d57600080fd5b50505060405180519392505050565b60008054600160a060020a03166396ce1ec78484846040516020015260405160e060020a63ffffffff851602815260048101929092526024820152604401602060405180830381600087803b151561020357600080fd5b6102c65a03f1151561021457600080fd5b5050506040518051949350505050565b60008054600160a060020a03166341aa00808484846040516020015260405160e060020a63ffffffff851602815260048101929092526024820152604401602060405180830381600087803b151561020357600080fd5b60008054600160a060020a031663302974008484846040516020015260405160e060020a63ffffffff851602815260048101929092526024820152604401602060405180830381600087803b151561020357600080fd5b6102da6103a6565b60008054600160a060020a0316906385cf47e59084906040516060015260405160e060020a63ffffffff84160281526004810191909152602401606060405180830381600087803b151561032d57600080fd5b6102c65a03f1151561033e57600080fd5b505050604051606001604052919050565b60008054600160a060020a031663d1de592a8484846040516020015260405160e060020a63ffffffff851602815260048101929092526024820152604401602060405180830381600087803b151561020357600080fd5b60606040519081016040526003815b60008152602001906001900390816103b557905050905600a165627a7a72305820e50b2cdce6e511e6e40e0c0abec4e4d25f44d4df856144148b42b8b16a3170ca0029",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1507088672465
+}
