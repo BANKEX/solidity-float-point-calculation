@@ -15,10 +15,12 @@ Included functions:
 - mul
 - div (naive implementation, slow)
 - log2
+- fast inverse sqrt
+- fast div (using fast inverse sqrt)
 
 Planned functions:
 
-- 2^x
+- exp
 
 Known issues:
 

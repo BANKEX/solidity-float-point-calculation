@@ -22,6 +22,9 @@ contract FloatMath {
 
     bytes32 constant ZERO_BYTES = bytes32(0);
 
+    uint256 constant INV_SQRT_MAGIC = uint256(bytes32(0x5fffe6eb50c7b537a9cd9f02e504fcfbfd9ec519e04e8f0a29d961d2aaeb2223));
+
+
     // uint256 constant MAX_MULTIPLICATION_BITS = uint256(15);    
     // uint256 constant MAX_MULTIPLICATION_DIVISOR = (uint(2) << MAX_MULTIPLICATION_BITS);
     
@@ -54,7 +57,7 @@ contract FloatMath {
         return fromArray(addArrays(aArray, bArray));
     }
     
-    function addArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+    function addArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (uint256[3] memory result) {
         if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
             return bArray;
         }
@@ -123,7 +126,7 @@ contract FloatMath {
         return a ^ bytes32(uint256(1) << 255);
     } 
 
-    function negateArray(uint256[3] aArray) public pure returns (uint256[3] memory result) {
+    function negateArray(uint256[3] aArray) internal pure returns (uint256[3] memory result) {
         if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
             return aArray;
         }
@@ -136,7 +139,7 @@ contract FloatMath {
         return fromArray(addArrays(aArray, bArray));
     }
     
-    function subArrays(uint256[3] aArray, uint256[3] _bArray) public pure returns (uint256[3] memory result) {
+    function subArrays(uint256[3] aArray, uint256[3] _bArray) internal pure returns (uint256[3] memory result) {
         if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
             return negateArray(_bArray);
         }
@@ -153,7 +156,7 @@ contract FloatMath {
         return fromArray(mulArrays(aArray, bArray));
     }
     
-    function mulArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+    function mulArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (uint256[3] memory result) {
         if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
             return [uint256(0), uint256(0), uint256(0)];
         }
@@ -189,14 +192,52 @@ contract FloatMath {
         return [newSign, newExp, newSignif];
     }   
     
-    
+    function fastInvSqrt(bytes32 a) public pure returns (bytes32 result) {
+        require(compare(a, ZERO_BYTES) == 1);
+        uint256 tmp = INV_SQRT_MAGIC - (uint256(a) >> 1);
+        uint256[3] memory THREEHALFS = toArray(0x3FFFF80000000000000000000000000000000000000000000000000000000000);
+        uint256[3] memory resArray = toArray(bytes32(tmp));
+        uint256[3] memory resDivByTwo = toArray(a);
+        resDivByTwo[1] = resDivByTwo[1]-1;
+        resArray = mulArrays(resArray, subArrays(THREEHALFS, mulArrays(resDivByTwo, mulArrays(resArray, resArray) ) ) ); 
+        // resArray = mulArrays(resArray, subArrays(THREEHALFS, mulArrays(resDivByTwo, mulArrays(resArray, resArray) ) ) );
+        return fromArray(resArray);
+        // y = y * (threehalfs - (x2 * y * y));
+
+    }
+
     function div(bytes32 a, bytes32 b) public pure returns (bytes32 result) {
-        uint256[3] memory aArray = toArray(a);
-        uint256[3] memory bArray = toArray(b);
-        return fromArray(divArrays(aArray, bArray));
+        if (b == ZERO_BYTES) {
+            revert();
+        }
+        if (compare(ZERO_BYTES, b) == 1) {
+            bytes32 _b = negate(b);
+            _b = mul(a, mul(fastInvSqrt(_b),fastInvSqrt(_b)));
+            return negate(_b);
+        }
+        return mul(fastInvSqrt(b), mul(a,fastInvSqrt(b)));
     }
     
-    function divArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (uint256[3] memory result) {
+    function divArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (uint256[3] memory result) {
+        if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
+            return [uint256(0), uint256(0), uint256(0)];
+        }
+        if (bArray[0] == 0 && bArray[1] == 0 && bArray[2] == 0) {
+            revert();
+        }
+        bytes32 a = fromArray(aArray);
+        bytes32 b = fromArray(bArray);
+        return toArray(div(a,b));
+    }    
+
+    
+    function divNaive(bytes32 a, bytes32 b) public pure returns (bytes32 result) {
+        uint256[3] memory aArray = toArray(a);
+        uint256[3] memory bArray = toArray(b);
+        return fromArray(divNaiveArrays(aArray, bArray));
+    }
+    
+    function divNaiveArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (uint256[3] memory result) {
         if (aArray[0] == 0 && aArray[1] == 0 && aArray[2] == 0) {
             return [uint256(0), uint256(0), uint256(0)];
         }
@@ -233,7 +274,7 @@ contract FloatMath {
         return compareArrays(aArray, bArray);
     }
     
-    function compareArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (int8 result) {
+    function compareArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (int8 result) {
         if (aArray[0]==0 && bArray[0] == 0) {
             return compareAbsArrays(aArray, bArray);
         } else if (aArray[0]==1 && bArray[0] == 1) {
@@ -250,7 +291,7 @@ contract FloatMath {
         return compareAbsArrays(aArray, bArray);
     }
 
-    function compareAbsArrays(uint256[3] aArray, uint256[3] bArray) public pure returns (int8 result) {
+    function compareAbsArrays(uint256[3] aArray, uint256[3] bArray) internal pure returns (int8 result) {
         if (aArray[1] > bArray[1]) {
             return 1;
         } else if (aArray[1] < bArray[1]) {
@@ -270,7 +311,7 @@ contract FloatMath {
         return fromArray(log2Array(aArray));
     }
     
-    function log2Array(uint256[3] aArray) public pure returns (uint256[3] memory result) {
+    function log2Array(uint256[3] aArray) internal pure returns (uint256[3] memory result) {
         require(aArray[0] == 0);
         result = initFromIntToArray(int256(aArray[1]) - int256(EXP_BIAS));
         uint256[3] memory ONE = initFromIntToArray(1);
@@ -278,7 +319,7 @@ contract FloatMath {
         uint256[3] memory tmp = initFromIntToArray(int256(aArray[2]));
         uint256[3] memory ZERO = [uint256(0), uint256(0), uint256(0)];
         tmp[1] = tmp[1] - SIGNIF_BITS;
-        uint256 numIterations = 64;
+        uint256 numIterations = 16;
         for (uint256 i = 1; i <= numIterations; i++) {
             tmp = mulArrays(tmp, tmp);
             ZERO = mulArrays(ZERO, TWO);
@@ -304,7 +345,7 @@ contract FloatMath {
         return fromArray(tmp);
     }
     
-    function initFromIntToArray(int256 a) public pure returns (uint256[3] memory result) {
+    function initFromIntToArray(int256 a) internal pure returns (uint256[3] memory result) {
         if (a==0) {
             return result;
         }
@@ -329,85 +370,85 @@ contract FloatMath {
         return [newSign, newExp, newSignif];
     }
     
-    function toInt(bytes32 a) public pure returns (int128 result, int128 multiplier, int128 divisor) {
-        uint256[3] memory tmp = toArray(a);
-        return toIntFromArray(tmp);
-    }
+    // function toInt(bytes32 a) public pure returns (int128 result, int128 multiplier, int128 divisor) {
+    //     uint256[3] memory tmp = toArray(a);
+    //     return toIntFromArray(tmp);
+    // }
     
-    function toIntFromArray(uint256[3] a) public pure returns (int128 result, int128 multiplier, int128 divisor) {
-        uint256 shiftedMantisa = a[2];
-        uint256 requiredShifts = a[1];
-        multiplier = 1;
-        divisor = 1;
-        if (requiredShifts >= EXP_BIAS) {
-            requiredShifts = requiredShifts - EXP_BIAS;
-            if (a[0] == 0) {
-                while (shiftedMantisa > INT128_MAX) {
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                }
-            } else {
-                while (shiftedMantisa > INT128_MIN) {
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                }
-            }
-            if (requiredShifts < 127) {
-                result = int128(shiftedMantisa);
-                if (a[0] == 1) {
-                    result = -result;
-                }
-                multiplier = multiplier << requiredShifts;
-            } else {
-                while (requiredShifts >= 127) {
-                    if (shiftedMantisa % 2 == 1) {
-                        return (0, -1, -1);
-                    }
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                } 
-                result = int128(shiftedMantisa);
-                if (a[0] == 1) { 
-                    result = -result;
-                }
-                multiplier = multiplier << requiredShifts;
-            }
-        } else {
-            requiredShifts = EXP_BIAS - requiredShifts;
-            if (a[0] == 0) {
-                while (shiftedMantisa > INT128_MAX) {
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                }
-            } else {
-                while (shiftedMantisa > INT128_MIN) {
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                }
-            }
-            if (requiredShifts < 127) {
-                result = int128(shiftedMantisa);
-                if (a[0] == 1) {
-                    result = -result;
-                }
-                divisor = divisor << requiredShifts;
-            } else {
-                while (requiredShifts >= 127) {
-                    if (shiftedMantisa % 2 == 1) {
-                        return (0, -1, -1);
-                    }
-                    shiftedMantisa = shiftedMantisa >> 1;
-                    requiredShifts--;
-                } 
-                result = int128(shiftedMantisa);
-                if (a[0] == 1) {
-                    result = -result;
-                }
-                divisor = divisor << requiredShifts;
-            }
-        }
-        return (result, multiplier, divisor);
-    }
+    // function toIntFromArray(uint256[3] a) public pure returns (int128 result, int128 multiplier, int128 divisor) {
+    //     uint256 shiftedMantisa = a[2];
+    //     uint256 requiredShifts = a[1];
+    //     multiplier = 1;
+    //     divisor = 1;
+    //     if (requiredShifts >= EXP_BIAS) {
+    //         requiredShifts = requiredShifts - EXP_BIAS;
+    //         if (a[0] == 0) {
+    //             while (shiftedMantisa > INT128_MAX) {
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             }
+    //         } else {
+    //             while (shiftedMantisa > INT128_MIN) {
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             }
+    //         }
+    //         if (requiredShifts < 127) {
+    //             result = int128(shiftedMantisa);
+    //             if (a[0] == 1) {
+    //                 result = -result;
+    //             }
+    //             multiplier = multiplier << requiredShifts;
+    //         } else {
+    //             while (requiredShifts >= 127) {
+    //                 if (shiftedMantisa % 2 == 1) {
+    //                     return (0, -1, -1);
+    //                 }
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             } 
+    //             result = int128(shiftedMantisa);
+    //             if (a[0] == 1) { 
+    //                 result = -result;
+    //             }
+    //             multiplier = multiplier << requiredShifts;
+    //         }
+    //     } else {
+    //         requiredShifts = EXP_BIAS - requiredShifts;
+    //         if (a[0] == 0) {
+    //             while (shiftedMantisa > INT128_MAX) {
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             }
+    //         } else {
+    //             while (shiftedMantisa > INT128_MIN) {
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             }
+    //         }
+    //         if (requiredShifts < 127) {
+    //             result = int128(shiftedMantisa);
+    //             if (a[0] == 1) {
+    //                 result = -result;
+    //             }
+    //             divisor = divisor << requiredShifts;
+    //         } else {
+    //             while (requiredShifts >= 127) {
+    //                 if (shiftedMantisa % 2 == 1) {
+    //                     return (0, -1, -1);
+    //                 }
+    //                 shiftedMantisa = shiftedMantisa >> 1;
+    //                 requiredShifts--;
+    //             } 
+    //             result = int128(shiftedMantisa);
+    //             if (a[0] == 1) {
+    //                 result = -result;
+    //             }
+    //             divisor = divisor << requiredShifts;
+    //         }
+    //     }
+    //     return (result, multiplier, divisor);
+    // }
     
 }
 

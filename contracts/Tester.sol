@@ -24,7 +24,7 @@ contract Tester {
     // bytes32 constant public SIGNIF_MIN_BYTES = bytes32(SIGNIF_MIN);
     
 
-    function testUintToFloat(int256 a) public view returns (bytes32 result) {
+    function testIntToFloat(int256 a) public view returns (bytes32 result) {
         result = floatLib.initFromInt(a);
         return result;
     }    
@@ -60,6 +60,11 @@ contract Tester {
         return result;
     }
 
+    function testFastInvSqrtBytes(bytes32 a) public view returns (bytes32 result) {
+        result = floatLib.fastInvSqrt(a);
+        return result;
+    }
+     
     function Tester(address _flib) public {
         floatLib = FloatMath(_flib);
     }

@@ -117,19 +117,23 @@ async function populateAccounts(){
 }
 
 async function runTests() {
+
+
     await comp();
 
     await startVM();
     await populateAccounts();
 
     await deployContracts()();
-
+    // magicInverse();
     try{
+        await testGasEstimates();
         await testEncodeDecode();
         await testAddition();
         await testSubtraction();
-        await testDivision();
         await testMultiplication();
+        await testFastInvSqrt();
+        await testDivision();
         await testZERO();
         await testLog2(); 
     }
@@ -146,7 +150,6 @@ function encodeBNtoBytes32(number) {
     if (number.equals(0)){
         return "0x" + "0"*64;
     }
-    // console.log(number.toNumber())
     var signString = "0"
     if (number < 0) {
         signString = "1";
@@ -169,28 +172,19 @@ function encodeBNtoBytes32(number) {
         exponent = exponent.sub(1);
     }
     assert(number.isInt());
-    // console.log(SIGNIF_MIN.toString(2));
     var binaryString = number.toString(2);
-    // console.log(binaryString);
-    // console.log(binaryString.length);
     binaryString = binaryString.substring(1);
     assert(binaryString.length == 236);
-    // console.log(binaryString);
-    // console.log(binaryString.length);
-    // console.log(exponent.toNumber());
     var expString = exponent.toString(2);
     expString = expString.padStart(19, "0");
-    // console.log(expString);
     assert(expString.length == 19);
 
     const final = signString + expString + binaryString;
     assert(final.length == 256);
-    // console.log(final);
     const tempNumber = new BigNumber(final, 2);
     const hexEncoded = tempNumber.toString(16);
     assert(hexEncoded.length == 64);
     return "0x"+ hexEncoded;
-    // var res = number.div()
 }
 
 function decodeBNfromBytes32(bytesString) {
@@ -205,22 +199,18 @@ function decodeBNfromBytes32(bytesString) {
     const tempNumber = new BigNumber(bytesString, 16);
     const binaryString = tempNumber.toString(2).padStart(256,"0");
     assert(binaryString.length == 256);
-    // console.log(binaryString);
     var sign = 1;
     if (binaryString.substring(0,1) == "1"){
         sign = -1;
     }
     const expString = binaryString.substring(1,20);
-    // console.log(expString);
     assert(expString.length == 19);
     var exponent = new BigNumber(expString, 2);
-    // console.log(exponent.toNumber());
     const mantString = binaryString.substring(20);
     assert(mantString.length == 236);
     var mantisa = new BigNumber(mantString,2);
     mantisa = mantisa.add(SIGNIF_MIN);
     exponent = exponent.sub(EXP_BIAS+236);
-    // console.log(exponent.toNumber());
     var number;
     if (exponent.toNumber() > 0){
         var number = mantisa.mul(TWO.pow(exponent)).mul(sign);
@@ -229,7 +219,6 @@ function decodeBNfromBytes32(bytesString) {
     } else {
         var number = mantisa.mul(sign);
     }
-    // console.log(number.toExponential());
     return number;
 }
 
@@ -251,13 +240,37 @@ async function testEncodeDecode(){
         // console.log(a);
         const testA = decodeBNfromBytes32(a);
         assert(testA.equals(aBN));
-        var res = await DeployedTesterContract.testUintToFloat(aBN);
+        var res = await DeployedTesterContract.testIntToFloat(aBN);
         assert(a == res);
     }
 
     console.log("Encoding and decoding tested");
 }
 
+
+async function testGasEstimates() {
+    var integer ="" + getRandomInt(1, 1000000000000000000001);
+    const aBN = new BigNumber(integer);
+    const a = encodeBNtoBytes32(aBN);
+    integer ="" + getRandomInt(1, 1000000000000000000001);
+    const bBN = new BigNumber(integer);
+    const b = encodeBNtoBytes32(bBN);
+
+    var res = await DeployedTesterContract.testIntToFloat.estimateGas(a);
+    console.log("ENCODE estimate = "+res.toString());
+    res = await DeployedTesterContract.testAddBytes.estimateGas(a,b);
+    console.log("ADD estimate = "+res.toString());    
+    res = await DeployedTesterContract.testSubBytes.estimateGas(a,b);
+    console.log("SUB estimate = "+res.toString());
+    res = await DeployedTesterContract.testMulBytes.estimateGas(a,b);
+    console.log("MUL estimate = "+res.toString());
+    res = await DeployedTesterContract.testDivBytes.estimateGas(a,b);
+    console.log("DIV estimate = "+res.toString());
+    res = await DeployedTesterContract.testLog2Bytes.estimateGas(a);
+    console.log("LOG2 estimate = "+res.toString());
+    res = await DeployedTesterContract.testFastInvSqrtBytes.estimateGas(a);
+    console.log("FAST INV SQRT estimate = "+res.toString());
+}
 async function testZERO() {
     console.log("Test operations on zero");
 
@@ -375,7 +388,7 @@ async function testDivision() {
             const b = encodeBNtoBytes32(bBN);
             var res = await DeployedTesterContract.testDivBytes(a,b);
             var num = decodeBNfromBytes32(res);
-            if(!num.equals( aBN.div(bBN) ) ){
+            if(num.div(aBN.div(bBN)).sub(1).abs().gt(1e-2)){
                 throw("Error in DIV");
             }
         }
@@ -394,14 +407,13 @@ async function testLog2() {
 
     for (var i = 0; i < 10; i++) {
         try{
-            var integer = ""+ getRandomInt(1, 1025);
-            // integer = "1000";
+            var integer = ""+ getRandomInt(1, 1000000000000000000000000000001);
             var aBN = new BigNumber(integer);
             const a = encodeBNtoBytes32(aBN);
             var res = await DeployedTesterContract.testLog2Bytes(a);
             var num = decodeBNfromBytes32(res);
             var expected = new BigNumber ("" + Math.log2(aBN.toNumber()));
-            if(num.div(expected).sub(1).abs().gt(1e-9)) {
+            if(num.div(expected).sub(1).abs().gt(1e-3)) {
                 throw("Error in LOG2");
             }
         }
@@ -412,6 +424,44 @@ async function testLog2() {
         }
     }
     console.log("Log2 test done");
+} 
+
+async function testFastInvSqrt() {
+    console.log("Test fast inv sqrt");
+
+    for (var i = 0; i < 10; i++) {
+        try{
+            var integer = ""+ getRandomInt(1, 1000000000000);
+            var aBN = new BigNumber(integer);
+            const a = encodeBNtoBytes32(aBN);
+            var res = await DeployedTesterContract.testFastInvSqrtBytes(a);
+            var num = decodeBNfromBytes32(res);
+            var expected = (new BigNumber(1)).div(aBN.sqrt());
+            if(num.div(expected).sub(1).abs().gt(1e-2)) {
+                throw("Error in FAST INV SQRT");
+            }
+        }
+        catch(err){
+            console.log("Expected "+expected.toString());
+            console.log("Got "+num.toString());
+            throw(err);
+        }
+    }
+    console.log("Fast inv sqrt test done");
+} 
+
+async function magicInverse() {
+    const exp = 254; 
+    const str = '1.0111111111111111100110111010110101000011000111101101010011011110101001110011011001111100000010111001010000010011111100111110111111110110011110110001010001100111100000010011101000111100001010001010011101100101100001110100101010101011101011001000100010001100101111101001000010010000001110011101011110010100111101001111110110010111010111110101100010010100101111010010001001111011001110100110011001010100100100011111010010001010000101001010101110011101011111110010101000111001001101001101001011001010111010100111011110010111011001110011010001010000001111100100100100111111100101001000100000101001110011110101111000111010110110011110001110011011110010100000001100000100111001101110110011010101111011001100010010100111111110011001011001011001000011101000110101011000111010111111111101100000000010000010111000111110000001100101100001110110101101111111101110010011111010000010100111110101000000011010010100101100001101100001110010000000000101011100010111001100111000111111000001011100100111011110011110010001111011001001111001011';
+    const p = str.split('.');
+    const magic = (p[0]+p[1].substring(0,exp)).padStart('0',256);
+    console.log(magic);
+    var aBN = new BigNumber(3);
+    const a = encodeBNtoBytes32(aBN);
+    console.log(a);
+    const threeHalfs =  "0x3FFFF80000000000000000000000000000000000000000000000000000000000"
+    const magicHex = new BigNumber(magic, 2);
+    console.log("0x"+magicHex.toString(16));
 } 
 
 runTests();
