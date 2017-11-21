@@ -17,11 +17,11 @@
     "coinstring": "^2.3.0",
     "ejs": "^2.5.7",
     "ejs-locals": "^1.0.2",
-    "ethereumjs-testrpc": "^4.1.1",
+    "ethereumjs-testrpc": "^6.0.3",
     "moment": "^2.18.1",
-    "solc": "^0.4.16",
-    "truffle-artifactor": "^2.1.5",
-    "truffle-contract": "^2.0.5",
+    "solc": "^0.4.18",
+    "truffle-artifactor": "^3.0.0",
+    "truffle-contract": "^3.0.1",
     "web3": "^0.20.1",
     "zeppelin-solidity": "^1.2.0"
   }
